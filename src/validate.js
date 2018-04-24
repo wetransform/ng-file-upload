@@ -85,10 +85,15 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
     }
   }
 
-  upload.applyModelValidation = function (ngModel, files) {
+  upload.applyModelValidation = function (ngModel, files, scope) {
     markModelAsDirty(ngModel, files);
     angular.forEach(ngModel.$ngfValidations, function (validation) {
       ngModel.$setValidity(validation.name, validation.valid);
+      if (!validation.valid && scope) {
+        var dataSent = {};
+        dataSent[validation.name] = true;
+        scope.$emit('invalidFile', dataSent);
+      }
     });
   };
 

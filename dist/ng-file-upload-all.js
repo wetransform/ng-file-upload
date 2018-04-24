@@ -928,8 +928,9 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
       var file = files && files.length ? files[0] : null;
 
       if (ngModel) {
-        upload.applyModelValidation(ngModel, files);
+        upload.applyModelValidation(ngModel, files, scope);
         ngModel.$setViewValue(isSingleModel ? file : files);
+        ngModel.$ngfValidations = [];
       }
 
       if (fileChange) {
@@ -1571,10 +1572,15 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
     }
   }
 
-  upload.applyModelValidation = function (ngModel, files) {
+  upload.applyModelValidation = function (ngModel, files, scope) {
     markModelAsDirty(ngModel, files);
     angular.forEach(ngModel.$ngfValidations, function (validation) {
       ngModel.$setValidity(validation.name, validation.valid);
+      if (!validation.valid && scope) {
+        var dataSent = {};
+        dataSent[validation.name] = true;
+        scope.$emit('invalidFile', dataSent);
+      }
     });
   };
 
@@ -2747,4 +2753,3 @@ ngFileUpload.service('UploadExif', ['UploadResize', '$q', function (UploadResize
 
   return upload;
 }]);
-
